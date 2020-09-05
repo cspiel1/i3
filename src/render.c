@@ -173,11 +173,14 @@ static int *precalculate_sizes(Con *con, render_params *p) {
     int total = con_rect_size_in_orientation(con);
     TAILQ_FOREACH (child, &(con->nodes_head), nodes) {
         double percentage = child->percent > 0.0 ? child->percent : 1.0 / p->children;
+        if (con_orientation(con) == HORIZ && child->window &&
+                child->window->class_class &&
+                !strcmp(child->window->class_class, "Gvim"))
+            percentage += .05;
+
         assigned += sizes[i++] = lround(percentage * total);
     }
-    assert(assigned == total ||
-           (assigned > total && assigned - total <= p->children * 2) ||
-           (assigned < total && total - assigned <= p->children * 2));
+
     int signal = assigned < total ? 1 : -1;
     while (assigned != total) {
         for (i = 0; i < p->children && assigned != total; ++i) {
